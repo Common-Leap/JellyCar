@@ -5,7 +5,7 @@
 This is an updated version of the original project which updates the switch version to work on the latest version of atmosphere.
 
 
-Current implemetation uses my library: [Andromeda-Lib](https://github.com/DrakonPL/Andromeda-Lib)
+Current implemetation uses a modified version of [Andromeda-Lib](https://github.com/DrakonPL/Andromeda-Lib) which you patch from the original version before building
 
 ## Build instructions
 
