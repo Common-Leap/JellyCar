@@ -1,0 +1,341 @@
+From 26f5793d2f262bb35c2a22efcd7c6c063b95b481 Mon Sep 17 00:00:00 2001
+From: Common-Leap <jace198a@gmail.com>
+Date: Sat, 21 Feb 2026 23:24:17 -0800
+Subject: [PATCH] switch: update input/touch backend for latest libnx
+
+---
+ .../Input/SWITCH/GamepadDeviceSwitch.cpp      | 67 +++++++++----------
+ Andromeda/Input/SWITCH/GamepadDeviceSwitch.h  |  6 +-
+ Andromeda/Input/SWITCH/InputManagerSwitch.cpp | 18 ++---
+ Andromeda/Input/SWITCH/InputManagerSwitch.h   |  1 +
+ Andromeda/Input/SWITCH/TouchDeviceSwitch.cpp  | 46 ++++++++-----
+ 5 files changed, 75 insertions(+), 63 deletions(-)
+
+diff --git a/Andromeda/Input/SWITCH/GamepadDeviceSwitch.cpp b/Andromeda/Input/SWITCH/GamepadDeviceSwitch.cpp
+index a933b80..7f1e382 100644
+--- a/Andromeda/Input/SWITCH/GamepadDeviceSwitch.cpp
++++ b/Andromeda/Input/SWITCH/GamepadDeviceSwitch.cpp
+@@ -18,7 +18,7 @@ namespace Andromeda
+ 			_kUp = kUp;
+ 		}
+ 		
+-		void GamepadDeviceSwitch::UpdateJoystick(JoystickPosition left,JoystickPosition right)
++		void GamepadDeviceSwitch::UpdateJoystick(HidAnalogStickState left,HidAnalogStickState right)
+ 		{
+ 			_leftJoy = left;
+ 			_rightJoy = right;
+@@ -26,22 +26,22 @@ namespace Andromeda
+ 
+ 		float GamepadDeviceSwitch::LeftAnalogX()
+ 		{
+-			return _leftJoy.dx / 32760.0f;
++			return _leftJoy.x / 32760.0f;
+ 		}
+ 		
+ 		float GamepadDeviceSwitch::LeftAnalogY()
+ 		{
+-			return _leftJoy.dy / 32760.0f;
++			return _leftJoy.y / 32760.0f;
+ 		}
+ 
+ 		float GamepadDeviceSwitch::RightAnalogX()
+ 		{
+-			return _rightJoy.dx / 32760.0f;
++			return _rightJoy.x / 32760.0f;
+ 		}
+ 		
+ 		float GamepadDeviceSwitch::RightAnalogY()
+ 		{
+-			return _rightJoy.dy / 32760.0f;
++			return _rightJoy.y / 32760.0f;
+ 		}
+ 
+ 		bool GamepadDeviceSwitch::KeyDown(Gamepad::Button button)
+@@ -50,40 +50,40 @@ namespace Andromeda
+ 			switch(button)
+ 			{
+ 			case Gamepad::Left: 
+-				return (_kDown & KEY_DLEFT);
++				return (_kDown & HidNpadButton_Left);
+ 				break;
+ 			case Gamepad::Right: 
+-				return (_kDown & KEY_DRIGHT);
++				return (_kDown & HidNpadButton_Right);
+ 				break;
+ 			case Gamepad::Up: 
+-				return (_kDown & KEY_DUP);
++				return (_kDown & HidNpadButton_Up);
+ 				break;
+ 			case Gamepad::Down: 
+-				return (_kDown & KEY_DDOWN);
++				return (_kDown & HidNpadButton_Down);
+ 				break;
+ 			case Gamepad::Triangle: 
+-				return (_kDown & KEY_X);
++				return (_kDown & HidNpadButton_X);
+ 				break;
+ 			case Gamepad::Square: 
+-				return (_kDown & KEY_Y);
++				return (_kDown & HidNpadButton_Y);
+ 				break;
+ 			case Gamepad::Circle: 
+-				return (_kDown & KEY_A);
++				return (_kDown & HidNpadButton_A);
+ 				break;
+ 			case Gamepad::Cross: 
+-				return (_kDown & KEY_B);
++				return (_kDown & HidNpadButton_B);
+ 				break;
+ 			case Gamepad::LTrigger:
+-				return (_kDown & KEY_L);
++				return (_kDown & HidNpadButton_L);
+ 				break;
+ 			case Gamepad::RTrigger:
+-				return (_kDown & KEY_R);
++				return (_kDown & HidNpadButton_R);
+ 				break;
+ 			case Gamepad::Select:
+-				return (_kDown & KEY_MINUS);
++				return (_kDown & HidNpadButton_Minus);
+ 				break;
+ 			case Gamepad::Start:
+-				return (_kDown & KEY_PLUS);
++				return (_kDown & HidNpadButton_Plus);
+ 				break;
+ 			}
+ 			
+@@ -106,7 +106,7 @@ namespace Andromeda
+ 				return LeftAnalogY() < toleranceLevel * -1.0f;
+ 				break;
+ 			case Gamepad::LAnalogPushed:
+-				return (_kDown & KEY_LSTICK);
++				return (_kDown & HidNpadButton_StickL);
+ 				break;
+ 			}
+ 
+@@ -125,7 +125,7 @@ namespace Andromeda
+ 				return RightAnalogY() < toleranceLevel * -1.0f;
+ 				break;
+ 			case Gamepad::RAnalogPushed:
+-				return (_kDown & KEY_RSTICK);
++				return (_kDown & HidNpadButton_StickR);
+ 				break;
+ 			}
+ 
+@@ -138,40 +138,40 @@ namespace Andromeda
+ 			switch(button)
+ 			{
+ 			case Gamepad::Left: 
+-				return !(_kUp & KEY_DLEFT);
++				return !(_kUp & HidNpadButton_Left);
+ 				break;
+ 			case Gamepad::Right: 
+-				return !(_kUp & KEY_DRIGHT);
++				return !(_kUp & HidNpadButton_Right);
+ 				break;
+ 			case Gamepad::Up: 
+-				return !(_kUp & KEY_DUP);
++				return !(_kUp & HidNpadButton_Up);
+ 				break;
+ 			case Gamepad::Down: 
+-				return !(_kUp & KEY_DDOWN);
++				return !(_kUp & HidNpadButton_Down);
+ 				break;
+ 			case Gamepad::Triangle: 
+-				return !(_kUp & KEY_X);
++				return !(_kUp & HidNpadButton_X);
+ 				break;
+ 			case Gamepad::Square: 
+-				return !(_kUp & KEY_Y);
++				return !(_kUp & HidNpadButton_Y);
+ 				break;
+ 			case Gamepad::Circle: 
+-				return !(_kUp & KEY_A);
++				return !(_kUp & HidNpadButton_A);
+ 				break;
+ 			case Gamepad::Cross: 
+-				return !(_kUp & KEY_B);
++				return !(_kUp & HidNpadButton_B);
+ 				break;
+ 			case Gamepad::LTrigger:
+-				return !(_kUp & KEY_L);
++				return !(_kUp & HidNpadButton_L);
+ 				break;
+ 			case Gamepad::RTrigger:
+-				return !(_kUp & KEY_R);
++				return !(_kUp & HidNpadButton_R);
+ 				break;
+ 			case Gamepad::Select:
+-				return !(_kUp & KEY_MINUS);
++				return !(_kUp & HidNpadButton_Minus);
+ 				break;
+ 			case Gamepad::Start:
+-				return !(_kUp & KEY_PLUS);
++				return !(_kUp & HidNpadButton_Plus);
+ 				break;
+ 			}
+ 			
+@@ -193,7 +193,7 @@ namespace Andromeda
+ 				return !(LeftAnalogY() < toleranceLevel * -1.0f);
+ 				break;
+ 			case Gamepad::LAnalogPushed:
+-				return !(_kDown & KEY_LSTICK);
++				return !(_kDown & HidNpadButton_StickL);
+ 				break;
+ 			}
+ 
+@@ -212,7 +212,7 @@ namespace Andromeda
+ 				return !(RightAnalogY() < toleranceLevel * -1.0f);
+ 				break;
+ 			case Gamepad::RAnalogPushed:
+-				return !(_kDown & KEY_RSTICK);
++				return !(_kDown & HidNpadButton_StickR);
+ 				break;
+ 			}
+ 
+@@ -221,4 +221,3 @@ namespace Andromeda
+ 
+ 	}
+ }
+-
+diff --git a/Andromeda/Input/SWITCH/GamepadDeviceSwitch.h b/Andromeda/Input/SWITCH/GamepadDeviceSwitch.h
+index 4c6d083..6ed53fd 100644
+--- a/Andromeda/Input/SWITCH/GamepadDeviceSwitch.h
++++ b/Andromeda/Input/SWITCH/GamepadDeviceSwitch.h
+@@ -22,8 +22,8 @@ namespace Andromeda
+ 			u64 _kDown;
+ 			u64 _kUp;
+ 			
+-			JoystickPosition _leftJoy;
+-			JoystickPosition _rightJoy;
++			HidAnalogStickState _leftJoy;
++			HidAnalogStickState _rightJoy;
+ 
+ 		public:
+ 
+@@ -37,7 +37,7 @@ namespace Andromeda
+ 			bool KeyUp(Gamepad::Button button);
+ 			
+ 			void UpdateKesy(u64 kDown,u64 kUp);
+-			void UpdateJoystick(JoystickPosition left,JoystickPosition right);
++			void UpdateJoystick(HidAnalogStickState left,HidAnalogStickState right);
+ 
+ 			friend class InputManagerSwitch;
+ 
+diff --git a/Andromeda/Input/SWITCH/InputManagerSwitch.cpp b/Andromeda/Input/SWITCH/InputManagerSwitch.cpp
+index 258fed3..f7c774d 100644
+--- a/Andromeda/Input/SWITCH/InputManagerSwitch.cpp
++++ b/Andromeda/Input/SWITCH/InputManagerSwitch.cpp
+@@ -10,6 +10,9 @@ namespace Andromeda
+ 	{
+ 		InputManagerSwitch::InputManagerSwitch()
+ 		{
++			padConfigureInput(1, HidNpadStyleSet_NpadStandard);
++			padInitializeDefault(&_pad);
++
+ 			_gamepad = new GamepadDeviceSwitch(); 
+ 		}
+ 		
+@@ -36,18 +39,11 @@ namespace Andromeda
+ 
+ 		void InputManagerSwitch::Update()
+ 		{
+-			//Scan all the inputs. This should be done once for each frame
+-			hidScanInput();
+-			
+-			//update data for pad 1
+-			u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
+-			
+-			//joystick
+-			JoystickPosition pos_left, pos_right;
++			padUpdate(&_pad);
++			u64 kHeld = padGetButtons(&_pad);
+ 
+-			//Read the joysticks' position
+-			hidJoystickRead(&pos_left, CONTROLLER_P1_AUTO, JOYSTICK_LEFT);
+-			hidJoystickRead(&pos_right, CONTROLLER_P1_AUTO, JOYSTICK_RIGHT);
++			HidAnalogStickState pos_left = padGetStickPos(&_pad, 0);
++			HidAnalogStickState pos_right = padGetStickPos(&_pad, 1);
+ 			
+ 			//update Ggamepad device
+ 			_gamepad->UpdateKesy(kHeld,kHeld);
+diff --git a/Andromeda/Input/SWITCH/InputManagerSwitch.h b/Andromeda/Input/SWITCH/InputManagerSwitch.h
+index 788a465..5c57535 100644
+--- a/Andromeda/Input/SWITCH/InputManagerSwitch.h
++++ b/Andromeda/Input/SWITCH/InputManagerSwitch.h
+@@ -13,6 +13,7 @@ namespace Andromeda
+ 			private:
+ 			
+ 				GamepadDeviceSwitch* _gamepad;
++				PadState _pad;
+ 			
+ 			public:
+ 			
+diff --git a/Andromeda/Input/SWITCH/TouchDeviceSwitch.cpp b/Andromeda/Input/SWITCH/TouchDeviceSwitch.cpp
+index 2198460..70ef79a 100644
+--- a/Andromeda/Input/SWITCH/TouchDeviceSwitch.cpp
++++ b/Andromeda/Input/SWITCH/TouchDeviceSwitch.cpp
+@@ -13,29 +13,45 @@ namespace Andromeda
+ 
+ 		int TouchDeviceSwitch::GetTouchCount()
+ 		{
+-			return hidTouchCount();
++			HidTouchScreenState touchState;
++			if (hidGetTouchScreenStates(&touchState, 1) == 0)
++			{
++				return 0;
++			}
++
++			return touchState.count;
+ 		}
+ 
+ 		int TouchDeviceSwitch::GetTouchX(int touchNumber)
+ 		{
+-			touchPosition touch;
+-			
+-			//Read the touch screen coordinates
+-            hidTouchRead(&touch, touchNumber);
+-			
+-			
+-			return touch.px;
++			HidTouchScreenState touchState;
++			if (hidGetTouchScreenStates(&touchState, 1) == 0)
++			{
++				return 0;
++			}
++
++			if (touchNumber < 0 || touchNumber >= touchState.count)
++			{
++				return 0;
++			}
++
++			return touchState.touches[touchNumber].x;
+ 		}
+ 
+ 		int TouchDeviceSwitch::GetTouchY(int touchNumber)
+ 		{
+-			touchPosition touch;
+-			
+-			//Read the touch screen coordinates
+-            hidTouchRead(&touch, touchNumber);
+-			
+-			
+-			return touch.py;
++			HidTouchScreenState touchState;
++			if (hidGetTouchScreenStates(&touchState, 1) == 0)
++			{
++				return 0;
++			}
++
++			if (touchNumber < 0 || touchNumber >= touchState.count)
++			{
++				return 0;
++			}
++
++			return touchState.touches[touchNumber].y;
+ 		}
+ 
+ 	}
+-- 
+2.53.0
+

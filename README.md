@@ -9,27 +9,58 @@ This is homebrew version that I made with permission from original author for ma
 
 Current implemetation uses my library: [Andromeda-Lib](https://github.com/DrakonPL/Andromeda-Lib)
 
-## Build instructions.
-
-### Important
-For all platforms you must clone first 
-[Andromeda-Lib](https://github.com/DrakonPL/Andromeda-Lib) , then this repository.
-
-### PlayStation Vita
-
-- Install newest VitaSDK using https://github.com/vitasdk/vdpm  
-- Compile Androimeda-Lib
-  - Go to Androimeda-Lib/Build/Vita 
-  - Run "make -jn"  (where n is numer of cores of your cpu)
-- Compile JellyCar
-  - Go to JellyCar/Build/Vita
-  - Run "make -jn"  (where n is numer of cores of your cpu)
+## Build instructions
 
 ### Nintendo Switch
 
-- Install devkitpro with Nintendo Switch SDK
-- Install additional libs
-  - pacman -S switch-pkg-config switch-mesa switch-glad switch-glm switch-sdl2 switch-sdl2_mixer switch-freetype
-- Compile JellyCar
-  - Go to JellyCar/Build/Switch
-  - Run "make -jn"  (where n is numer of cores of your cpu)
+1. Clone both repositories as siblings:
+
+```sh
+git clone https://github.com/DrakonPL/Andromeda-Lib
+git clone https://github.com/Common-Leap/JellyCar.git JellyCar
+```
+
+Expected layout:
+
+```txt
+Workspace/
+  Andromeda-Lib/
+  JellyCar/
+```
+
+Run the remaining commands from the `Workspace/` directory shown above.
+
+2. Install devkitPro + Switch toolchain and libs:
+
+```sh
+sudo pacman -Syu devkitA64 libnx switch-tools \
+  switch-pkg-config switch-mesa switch-glad switch-glm \
+  switch-sdl2 switch-sdl2_mixer switch-freetype switch-harfbuzz
+```
+
+3. Set environment variables:
+
+```sh
+export DEVKITPRO=/opt/devkitpro
+export DEVKITA64=$DEVKITPRO/devkitA64
+export PATH=$DEVKITA64/bin:$DEVKITPRO/tools/bin:$DEVKITPRO/portlibs/switch/bin:$PATH
+```
+
+4. Apply the required `Andromeda-Lib` compatibility patch for latest `libnx`:
+
+```sh
+git -C Andromeda-Lib apply ../JellyCar/Build/Switch/andromeda-lib-libnx.patch
+```
+
+5. Build:
+
+```sh
+cd JellyCar/Build/Switch
+make -j$(nproc)
+```
+
+If `Andromeda-Lib` is not in the default sibling location:
+
+```sh
+make -j$(nproc) ANDROMEDA_LIB=/absolute/or/relative/path/to/Andromeda-Lib
+```
