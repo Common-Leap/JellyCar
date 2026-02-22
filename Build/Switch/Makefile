@@ -45,7 +45,8 @@ TARGET		:=	JellyCar
 BUILD		:=	build
 SOURCES		:=	
 DATA		:=	data
-INCLUDES	:=	../../../Andromeda-Lib ../../../Andromeda-Lib/Libs ../../../Andromeda-Lib/Libs/freetype_gl ../../../Andromeda-Lib/Libs/stb ../../../Andromeda-Lib/Libs/tinyxml ../../../Andromeda-Lib/Libs/tiny_obj_loader ../../../Andromeda-Lib/Libs/bullet/include/bullet \
+ANDROMEDA_LIB	?=	../../../Andromeda-Lib
+INCLUDES	:=	$(ANDROMEDA_LIB) $(ANDROMEDA_LIB)/Libs $(ANDROMEDA_LIB)/Libs/freetype_gl $(ANDROMEDA_LIB)/Libs/stb $(ANDROMEDA_LIB)/Libs/tinyxml $(ANDROMEDA_LIB)/Libs/tiny_obj_loader $(ANDROMEDA_LIB)/Libs/bullet/include/bullet \
 				../../../JellyCar ../../../JellyCar/Libs
 #ROMFS	:=	romfs
 
@@ -57,15 +58,15 @@ ARCH	:=	-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 			$(ARCH) $(DEFINES)
 
-CFLAGS	+=	$(INCLUDE) -D__SWITCH__ `aarch64-none-elf-pkg-config --cflags SDL2_mixer`
+CFLAGS	+=	$(INCLUDE) -D__SWITCH__ `aarch64-none-elf-pkg-config --cflags SDL2_mixer freetype2`
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11 -ffat-lto-objects -flto  -DANDROMEDA_SWITCH -D__SWITCH__ `aarch64-none-elf-pkg-config --cflags SDL2_mixer`
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11 -ffat-lto-objects -flto  -DANDROMEDA_SWITCH -D__SWITCH__ `aarch64-none-elf-pkg-config --cflags SDL2_mixer freetype2`
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lnx -lglad -lEGL -lglapi -ldrm_nouveau -lpthread -lz -lm -lstdc++ -lfreetype -lpng -lbz2 `aarch64-none-elf-pkg-config --libs  sdl2 SDL2_mixer` 
+LIBS	:= -lnx -lglad -lEGL -lglapi -ldrm_nouveau -lpthread -lz -lm -lstdc++ -lfreetype -lpng -lbz2 `aarch64-none-elf-pkg-config --libs  sdl2 SDL2_mixer freetype2` 
 
 
 #---------------------------------------------------------------------------------
@@ -73,56 +74,53 @@ LIBS	:= -lnx -lglad -lEGL -lglapi -ldrm_nouveau -lpthread -lz -lm -lstdc++ -lfre
 #---------------------------------------------------------------------------------
 
 SRC_RENDERER	:=\
-	../../../Andromeda-Lib/Andromeda/FileSystem/FileManager.cpp \
-	../../../Andromeda-Lib/Andromeda/FileSystem/BaseFile.cpp \
-	../../../Andromeda-Lib/Andromeda/FileSystem/Stdio/StdioFile.cpp \
-	../../../Andromeda-Lib/Andromeda/FileSystem/Stdio/StdioDirectory.cpp \
-	../../../Andromeda-Lib/Andromeda/Utils/Logger.cpp \
-	../../../Andromeda-Lib/Andromeda/Utils/SimpleProfiler.cpp \
-	../../../Andromeda-Lib/Andromeda/Audio/Sound.o \
-	../../../Andromeda-Lib/Andromeda/Audio/AudioManager.o \
-	../../../Andromeda-Lib/Andromeda/Audio/Sdl/SdlSound.o \
-	../../../Andromeda-Lib/Andromeda/Audio/Sdl/SdlAudioManager.o \
-	../../../Andromeda-Lib/Andromeda/Graphics/Camera3d.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Texture.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/RenderManager.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Shader.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/ShaderManager.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Sprite.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/TextureManager.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/VertexArrayObject.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/VertexBufferObject.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/FrameBufferObject.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/GL/RenderManagerGL3.o \
-	../../../Andromeda-Lib/Andromeda/Graphics/GL/ShaderGlsl.o \
-	../../../Andromeda-Lib/Andromeda/Graphics/GL/VertexArrayObjectGL3.o \
-	../../../Andromeda-Lib/Andromeda/Graphics/GL/VertexBufferObjectGL3.o \
-	../../../Andromeda-Lib/Andromeda/Graphics/GL/FrameBufferObjectGL3.o \
-	../../../Andromeda-Lib/Andromeda/Graphics/Text/TextureAtlas.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Text/TexturedFont.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Text/FontManager.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Models/ModelObj.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Models/ModelMaterial.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Models/ModelMd5.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Models/ModelMd5Animation.cpp \
-	../../../Andromeda-Lib/Andromeda/Graphics/Models/ModelMd5Utils.cpp \
-	../../../Andromeda-Lib/Andromeda/System/GameLoader.cpp \
-	../../../Andromeda-Lib/Andromeda/System/GameManager.cpp \
-	../../../Andromeda-Lib/Andromeda/System/GameState.cpp \
-	../../../Andromeda-Lib/Andromeda/System/SystemManager.cpp \
-	../../../Andromeda-Lib/Andromeda/System/MemoryManager.cpp \
-	../../../Andromeda-Lib/Andromeda/System/Timer.cpp \
-	../../../Andromeda-Lib/Andromeda/System/SWITCH/GameLoaderSwitch.o \
-	../../../Andromeda-Lib/Andromeda/System/SWITCH/MemoryManagerSwitch.o \
-	../../../Andromeda-Lib/Andromeda/Input/InputManager.o \
-	../../../Andromeda-Lib/Andromeda/Input/SWITCH/InputManagerSwitch.o \
-	../../../Andromeda-Lib/Andromeda/Input/SWITCH/GamepadDeviceSwitch.o \
-	../../../Andromeda-Lib/Andromeda/Input/SWITCH/TouchDeviceSwitch.o \
-	../../../Andromeda-Lib/Libs/tinyxml/tinystr.cpp \
-	../../../Andromeda-Lib/Libs/tinyxml/tinyxmlerror.cpp \
-	../../../Andromeda-Lib/Libs/tinyxml/tinyxmlparser.cpp \
-	../../../Andromeda-Lib/Libs/tinyxml/tinyxml.cpp \
-	../../../Andromeda-Lib/Libs/tiny_obj_loader/tiny_obj_loader.cpp\
+	$(ANDROMEDA_LIB)/Andromeda/FileSystem/FileManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/FileSystem/BaseFile.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/FileSystem/Stdio/StdioFile.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/FileSystem/Stdio/StdioDirectory.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Utils/Logger.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Utils/SimpleProfiler.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Audio/Sound.o \
+	$(ANDROMEDA_LIB)/Andromeda/Audio/AudioManager.o \
+	$(ANDROMEDA_LIB)/Andromeda/Audio/Sdl/SdlSound.o \
+	$(ANDROMEDA_LIB)/Andromeda/Audio/Sdl/SdlAudioManager.o \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Camera3d.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Texture.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/RenderManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Shader.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/ShaderManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Sprite.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/TextureManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/VertexArrayObject.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/VertexBufferObject.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/FrameBufferObject.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/GL/RenderManagerGL3.o \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/GL/ShaderGlsl.o \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/GL/VertexArrayObjectGL3.o \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/GL/VertexBufferObjectGL3.o \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/GL/FrameBufferObjectGL3.o \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Text/TextureAtlas.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Text/TexturedFont.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Text/FontManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Models/ModelObj.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/Graphics/Models/ModelMaterial.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/System/GameLoader.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/System/GameManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/System/GameState.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/System/SystemManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/System/MemoryManager.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/System/Timer.cpp \
+	$(ANDROMEDA_LIB)/Andromeda/System/SWITCH/GameLoaderSwitch.o \
+	$(ANDROMEDA_LIB)/Andromeda/System/SWITCH/MemoryManagerSwitch.o \
+	$(ANDROMEDA_LIB)/Andromeda/Input/InputManager.o \
+	$(ANDROMEDA_LIB)/Andromeda/Input/SWITCH/InputManagerSwitch.o \
+	$(ANDROMEDA_LIB)/Andromeda/Input/SWITCH/GamepadDeviceSwitch.o \
+	$(ANDROMEDA_LIB)/Andromeda/Input/SWITCH/TouchDeviceSwitch.o \
+	$(ANDROMEDA_LIB)/Libs/tinyxml/tinystr.cpp \
+	$(ANDROMEDA_LIB)/Libs/tinyxml/tinyxmlerror.cpp \
+	$(ANDROMEDA_LIB)/Libs/tinyxml/tinyxmlparser.cpp \
+	$(ANDROMEDA_LIB)/Libs/tinyxml/tinyxml.cpp \
+	$(ANDROMEDA_LIB)/Libs/tiny_obj_loader/tiny_obj_loader.cpp\
 	../../../JellyCar/JellyPhysics/AABB.cpp \
 	../../../JellyCar/JellyPhysics/Body.cpp \
 	../../../JellyCar/JellyPhysics/ClosedShape.cpp \
@@ -163,14 +161,14 @@ SOURCEFILES_CPP	:=\
 	$(SRC_RENDERER) 
 
 SOURCEFILES_C	:=\
-	../../../Andromeda-Lib/Libs/freetype_gl/distance-field.c \
-	../../../Andromeda-Lib/Libs/freetype_gl/edtaa3func.c \
-	../../../Andromeda-Lib/Libs/freetype_gl/font-manager.c \
-	../../../Andromeda-Lib/Libs/freetype_gl/platform.c \
-	../../../Andromeda-Lib/Libs/freetype_gl/texture-atlas.c \
-	../../../Andromeda-Lib/Libs/freetype_gl/texture-font.c \
-	../../../Andromeda-Lib/Libs/freetype_gl/utf8-utils.c \
-	../../../Andromeda-Lib/Libs/freetype_gl/vector.c
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/distance-field.c \
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/edtaa3func.c \
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/font-manager.c \
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/platform.c \
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/texture-atlas.c \
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/texture-font.c \
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/utf8-utils.c \
+	$(ANDROMEDA_LIB)/Libs/freetype_gl/vector.c
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
