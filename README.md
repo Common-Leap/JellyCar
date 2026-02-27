@@ -60,6 +60,13 @@ make clean
 make -j$(nproc)
 ```
 
+By default, file logging is disabled (`FILE_LOG=0`), so no `Info*.txt` / `Error*.txt` debug files are written.
+To enable file logging, build with:
+
+```sh
+make -j$(nproc) FILE_LOG=1
+```
+
 If `Andromeda-Lib` is not in the default sibling location:
 
 ```sh

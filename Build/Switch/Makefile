@@ -50,6 +50,8 @@ ANDROMEDA_LIB	?=	../../../Andromeda-Lib
 INCLUDES	:=	$(ANDROMEDA_LIB) $(ANDROMEDA_LIB)/Libs $(ANDROMEDA_LIB)/Libs/freetype_gl $(ANDROMEDA_LIB)/Libs/stb $(ANDROMEDA_LIB)/Libs/tinyxml $(ANDROMEDA_LIB)/Libs/tiny_obj_loader $(ANDROMEDA_LIB)/Libs/bullet/include/bullet \
 				../../../JellyCar ../../../JellyCar/Libs
 ROMFS	:=	romfs
+FILE_LOG	?=	0
+DEFINES		+=	-DANDROMEDA_FILE_LOG=$(FILE_LOG)
 
 #---------------------------------------------------------------------------------
 # options for code generation

@@ -840,60 +840,204 @@ index d2face8..53d3ee1 100644
 \ No newline at end of file
 +}
 diff --git a/Andromeda/Utils/Logger.cpp b/Andromeda/Utils/Logger.cpp
-index 576339b..1ef1609 100644
+index 576339b..a13f83e 100644
 --- a/Andromeda/Utils/Logger.cpp
 +++ b/Andromeda/Utils/Logger.cpp
-@@ -75,10 +75,13 @@ namespace Andromeda
- 				if (file == 0)
- 					return;
+@@ -14,6 +14,12 @@
+ //int ret;
+ #endif
+ 
++#if defined(ANDROMEDA_FILE_LOG) && (ANDROMEDA_FILE_LOG != 0)
++#define ANDROMEDA_LOG_FILE_OUTPUT 1
++#else
++#define ANDROMEDA_LOG_FILE_OUTPUT 0
++#endif
++
+ namespace Andromeda
+ {
+ 	namespace Utils
+@@ -56,99 +62,120 @@ namespace Andromeda
+ 
+ 		void Logger::Log(const char* message, ...)
+ 		{
+-			if (_active)
++			if (!_active)
+ 			{
+-				va_list argList;
+-				char cbuffer[1024];
+-				va_start(argList, message);
+-				vsnprintf(cbuffer, 1024, message, argList);
+-				va_end(argList);
++				return;
++			}
+ 
+-				#ifdef ANDROMEDA_VITA
+-				{
+-					//debugNetPrintf(DEBUG, cbuffer, ret);
+-				}
+-				#endif
++#if ANDROMEDA_LOG_FILE_OUTPUT
++			va_list argList;
++			char cbuffer[1024];
++			va_start(argList, message);
++			vsnprintf(cbuffer, 1024, message, argList);
++			va_end(argList);
+ 
+-				FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(_fileName,true);
++			#ifdef ANDROMEDA_VITA
++			{
++				//debugNetPrintf(DEBUG, cbuffer, ret);
++			}
++			#endif
+ 
+-				if (file == 0)
+-					return;
++			FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(_fileName,true);
  
 -				file->Open(FileSystem::Append, FileSystem::Text);
 -				file->Write(cbuffer, sizeof(char), strlen(cbuffer));
 -				file->Close();
-+				if (!file->Open(FileSystem::Append, FileSystem::Text))
-+				{
-+					delete file;
-+					return;
-+				}
++			if (file == 0)
++				return;
  
-+				file->Write(cbuffer, sizeof(char), strlen(cbuffer));
++			if (!file->Open(FileSystem::Append, FileSystem::Text))
++			{
  				delete file;
++				return;
  			}
++
++			file->Write(cbuffer, sizeof(char), strlen(cbuffer));
++			delete file;
++#endif
  		}
-@@ -109,10 +112,13 @@ namespace Andromeda
- 				if (file == 0)
- 					return;
+ 
+ 		void Logger::Info(const char* file, const char* function, int line, const char *message, ...)
+ 		{
+-			if (_active)
++			if (!_active)
+ 			{
+-				va_list argList;
+-				char cbuffer[1024];
+-				va_start(argList, message);
+-				vsnprintf(cbuffer, 1024, message, argList);
+-				va_end(argList);
++				return;
++			}
+ 
+-				std::string logMessage = "";
++#if ANDROMEDA_LOG_FILE_OUTPUT
++			va_list argList;
++			char cbuffer[1024];
++			va_start(argList, message);
++			vsnprintf(cbuffer, 1024, message, argList);
++			va_end(argList);
+ 
+-				if (_debug)
+-				{
+-					logMessage = GetTime() + " " + std::string(file) + "(" + to_string(line) + ") " + std::string(function) + " : " + std::string(cbuffer);
+-				}
+-				else
+-				{
+-					logMessage = std::string(cbuffer);
+-				}
++			std::string logMessage = "";
+ 
+-				FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(_fileName, true);
++			if (_debug)
++			{
++				logMessage = GetTime() + " " + std::string(file) + "(" + to_string(line) + ") " + std::string(function) + " : " + std::string(cbuffer);
++			}
++			else
++			{
++				logMessage = std::string(cbuffer);
++			}
+ 
+-				if (file == 0)
+-					return;
++			FileSystem::BaseFile* outFile = FileSystem::FileManager::Instance()->GetFile(_fileName, true);
  
 -				file->Open(FileSystem::Append, FileSystem::Text);
 -				file->Write((void*)logMessage.c_str(), sizeof(char), logMessage.length());
 -				file->Close();
-+				if (!file->Open(FileSystem::Append, FileSystem::Text))
-+				{
-+					delete file;
-+					return;
-+				}
++			if (outFile == 0)
++				return;
  
-+				file->Write((void*)logMessage.c_str(), sizeof(char), logMessage.length());
- 				delete file;
+-				delete file;
++			if (!outFile->Open(FileSystem::Append, FileSystem::Text))
++			{
++				delete outFile;
++				return;
  			}
++
++			outFile->Write((void*)logMessage.c_str(), sizeof(char), logMessage.length());
++			delete outFile;
++#endif
  		}
-@@ -143,10 +149,13 @@ namespace Andromeda
- 				if (file == 0)
- 					return;
+ 
+ 		void Logger::Error(const char* file, const char* function,int line, const char *message, ...)
+ 		{
+-			if (_active)
++			if (!_active)
+ 			{
+-				va_list argList;
+-				char cbuffer[1024];
+-				va_start(argList, message);
+-				vsnprintf(cbuffer, 1024, message, argList);
+-				va_end(argList);
++				return;
++			}
+ 
+-				std::string logMessage = "";
++#if ANDROMEDA_LOG_FILE_OUTPUT
++			va_list argList;
++			char cbuffer[1024];
++			va_start(argList, message);
++			vsnprintf(cbuffer, 1024, message, argList);
++			va_end(argList);
+ 
+-				if (_debug)
+-				{
+-					logMessage = GetTime() + " " + std::string(file) + "(" + to_string(line) + ") " + std::string(function) + " : " + std::string(cbuffer);
+-				}
+-				else
+-				{
+-					logMessage = std::string(cbuffer);
+-				}
++			std::string logMessage = "";
+ 
+-				FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(_errorFileName, true);
++			if (_debug)
++			{
++				logMessage = GetTime() + " " + std::string(file) + "(" + to_string(line) + ") " + std::string(function) + " : " + std::string(cbuffer);
++			}
++			else
++			{
++				logMessage = std::string(cbuffer);
++			}
+ 
+-				if (file == 0)
+-					return;
++			FileSystem::BaseFile* outFile = FileSystem::FileManager::Instance()->GetFile(_errorFileName, true);
  
 -				file->Open(FileSystem::Append, FileSystem::Text);
 -				file->Write((void*)logMessage.c_str(), sizeof(char), logMessage.length());
 -				file->Close();
-+				if (!file->Open(FileSystem::Append, FileSystem::Text))
-+				{
-+					delete file;
-+					return;
-+				}
++			if (outFile == 0)
++				return;
  
-+				file->Write((void*)logMessage.c_str(), sizeof(char), logMessage.length());
- 				delete file;
+-				delete file;
++			if (!outFile->Open(FileSystem::Append, FileSystem::Text))
++			{
++				delete outFile;
++				return;
  			}
++
++			outFile->Write((void*)logMessage.c_str(), sizeof(char), logMessage.length());
++			delete outFile;
++#endif
  		}
+ 
+ 
 diff --git a/Libs/freetype_gl/texture-font.c b/Libs/freetype_gl/texture-font.c
 index bff7957..c04ff96 100644
 --- a/Libs/freetype_gl/texture-font.c
