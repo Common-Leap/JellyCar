@@ -1,6 +1,9 @@
 #include <Andromeda/System/GameManager.h>
 #include <Andromeda/System/GameLoader.h>
+#include <Andromeda/Audio/AudioManager.h>
+#include <Andromeda/Utils/Logger.h>
 #include "JellyGameManager.h"
+#include "Utils/AudioHelper.h"
 
 using namespace Andromeda::System;
 
@@ -45,5 +48,13 @@ int main(int argc, char *argv[])
 
 	loader->Run();
 
+	Andromeda::Utils::Logger::Instance()->Log("Main: begin audio shutdown\n");
+	AudioHelper::Shutdown();
+	Andromeda::Utils::Logger::Instance()->Log("Main: audio shutdown complete\n");
+
+	Andromeda::Audio::AudioManager::Shutdown();
+	Andromeda::Utils::Logger::Instance()->Log("Main: audio manager shutdown complete\n");
+
+	Andromeda::Utils::Logger::Instance()->Log("Main: return to standard libnx exit\n");
 	return 0;
 }

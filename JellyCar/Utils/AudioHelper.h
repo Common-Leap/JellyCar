@@ -58,6 +58,7 @@ public:
 	~AudioHelper();
 
 	static AudioHelper* Instance();
+	static void Shutdown();
 
 	void PlayHitSound();
 

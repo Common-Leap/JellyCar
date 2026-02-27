@@ -1,11 +1,11 @@
-![JellyCar logo](https://static.wikia.nocookie.net/jellycar/images/9/91/Jellycarlogo.png/revision/latest?cb=20231007222847)
+![JellyCar logo](https://marcinp.xyz/jellycar/2020031417273500-DB1426D1DFD034027CECDE9C2DD914B8.jpg)
 
 ## JellyCar is great 2d game with soft body physics created by Walaber https://twitter.com/walaber.
 
-This is an updated version of the original project which updates the switch version to work on the latest version of atmosphere.
+This is an updated homebrew version of the original project for many platforms
+(PC, PSP, Wii, PlayStation 3, PlayStation Vita, Nintendo Switch), including Switch compatibility updates for current Atmosphere/libnx.
 
-
-Current implemetation uses a modified version of [Andromeda-Lib](https://github.com/DrakonPL/Andromeda-Lib) which you patch from the original version before building
+Current implementation uses [Andromeda-Lib](https://github.com/DrakonPL/Andromeda-Lib), patched during setup below.
 
 ## Build instructions
 
@@ -44,16 +44,19 @@ export DEVKITA64=$DEVKITPRO/devkitA64
 export PATH=$DEVKITA64/bin:$DEVKITPRO/tools/bin:$DEVKITPRO/portlibs/switch/bin:$PATH
 ```
 
-4. Apply the required `Andromeda-Lib` compatibility patch for latest `libnx`:
+4. Apply the required `Andromeda-Lib` compatibility patch for latest `libnx` (Switch exit/audio/font/shader fixes):
 
 ```sh
 git -C Andromeda-Lib apply ../JellyCar/Build/Switch/andromeda-lib-libnx.patch
 ```
 
+If this reports the patch is already applied, continue.
+
 5. Build:
 
 ```sh
 cd JellyCar/Build/Switch
+make clean
 make -j$(nproc)
 ```
 
@@ -62,3 +65,13 @@ If `Andromeda-Lib` is not in the default sibling location:
 ```sh
 make -j$(nproc) ANDROMEDA_LIB=/absolute/or/relative/path/to/Andromeda-Lib
 ```
+
+The build now auto-stages `JellyCar/Assets` into `Build/Switch/romfs/Assets` and embeds it in `JellyCar.nro`, so no separate asset copy is required for normal use.
+
+6. Deploy and run:
+
+- Copy `JellyCar/Build/Switch/JellyCar.nro` to `sdmc:/switch/JellyCar/JellyCar.nro`.
+- Launch from Homebrew Menu with title override (hold `R` while opening a game) to avoid applet-memory crashes.
+- Optional override: if you want filesystem assets instead of embedded romfs, place `Assets` at `sdmc:/switch/JellyCar/Assets`.
+
+For a release package, `JellyCar.nro` is the required runtime file.

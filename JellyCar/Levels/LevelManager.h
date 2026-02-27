@@ -12,6 +12,7 @@ using namespace JellyPhysics;
 #include "SimpleStruct/BodyObject.h"
 
 #include <map>
+#include <Andromeda/Graphics/Texture.h>
 
 class LevelManager
 {
@@ -24,7 +25,7 @@ private:
 
 	std::vector<LevelInfo> _levels;
 	std::vector<SkinInfo> _skins;
-	std::map<std::string, Texture*> _images;
+	std::map<std::string, Andromeda::Graphics::Texture*> _images;
 
 	std::vector<LevelSoftBody*> gameBodies;
 	std::vector<std::string> gameBodiesNames;
@@ -71,8 +72,8 @@ public:
 	void SetTime(std::string levelName,float time);
 	void SetJump(std::string levelName,float jump);
 
-	Texture* GetThumb(std::string levelName);
-	Texture* GetCarImage(std::string carImage);
+	Andromeda::Graphics::Texture* GetThumb(std::string levelName);
+	Andromeda::Graphics::Texture* GetCarImage(std::string carImage);
 
 	Car* GetCar();
 	Vector2 GetCarStartPos();

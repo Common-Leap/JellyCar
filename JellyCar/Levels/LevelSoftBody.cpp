@@ -6,7 +6,7 @@
 #include <string>
 
 #include <Andromeda/FileSystem/FileManager.h>
-using namespace Andromeda;
+namespace AFS = Andromeda::FileSystem;
 
 LevelSoftBody::LevelSoftBody(std::string fileName, World *mWorld, const Vector2& pos, float angle, const Vector2& scale, int material)
 {
@@ -24,12 +24,12 @@ LevelSoftBody::LevelSoftBody(std::string fileName, World *mWorld, const Vector2&
 	JellyPhysics::ClosedShape shape;
 
 	//loac main level file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(fileName);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(fileName);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	int dataSize = 0;
 	unsigned char* _buffer = file->GetData(dataSize);

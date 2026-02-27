@@ -3,11 +3,11 @@
 #include <time.h>
 
 #include <sstream>
-#include "Andromeda/Utils/Logger.h"
+#include <Andromeda/Utils/Logger.h>
 #include <Andromeda/FileSystem/FileManager.h>
 #include "tinyxml.h"
 
-using namespace Andromeda;
+namespace AFS = Andromeda::FileSystem;
 
 AudioHelper* AudioHelper::_instance = 0;
 
@@ -49,14 +49,30 @@ void AudioHelper::Init()
 
 AudioHelper::~AudioHelper()
 {
+	Andromeda::Utils::Logger::Instance()->Log("AudioHelper::~AudioHelper begin\n");
+
+	if (_musicPlaying && _music != 0)
+	{
+		_music->Stop();
+		delete _music;
+		_music = 0;
+		_musicPlaying = false;
+	}
+
 	for (size_t i = 0; i < _hitSounds.size(); i++)
 	{
 		delete _hitSounds[i];
 	}
+	_hitSounds.clear();
 
 	delete _carSlow;
+	_carSlow = 0;
 	delete _carFast;
-	delete _audioManager;
+	_carFast = 0;
+	AudioManager::Shutdown();
+	_audioManager = 0;
+
+	Andromeda::Utils::Logger::Instance()->Log("AudioHelper::~AudioHelper done\n");
 }
 
 AudioHelper* AudioHelper::Instance()
@@ -67,6 +83,17 @@ AudioHelper* AudioHelper::Instance()
 	}
 
 	return _instance;
+}
+
+void AudioHelper::Shutdown()
+{
+	if (_instance != 0)
+	{
+		Andromeda::Utils::Logger::Instance()->Log("AudioHelper::Shutdown begin\n");
+		delete _instance;
+		_instance = 0;
+		Andromeda::Utils::Logger::Instance()->Log("AudioHelper::Shutdown done\n");
+	}
 }
 
 void AudioHelper::LoadSounds()
@@ -254,12 +281,12 @@ void AudioHelper::LoadSetting()
 	std::string fileName = "JellyAudioSettings.xml";
 
 	//loac main level file
-	Andromeda::FileSystem::BaseFile* file = Andromeda::FileSystem::FileManager::Instance()->GetFile(fileName, true);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(fileName, true);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	if (!file->Exist())
 	{
@@ -311,7 +338,7 @@ void AudioHelper::SaveSettings()
 {
 	std::string fileName = "JellyAudioSettings.xml";
 
-	std::string saveFile = Andromeda::FileSystem::FileManager::Instance()->GetSaveDirPath() + fileName;
+	std::string saveFile = AFS::FileManager::Instance()->GetSaveDirPath() + fileName;
 
 	TiXmlDocument doc;
 	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "", "");

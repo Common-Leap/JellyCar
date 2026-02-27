@@ -2,7 +2,7 @@
 #include "tinyxml.h"
 
 #include <Andromeda/FileSystem/FileManager.h>
-using namespace Andromeda;
+namespace AFS = Andromeda::FileSystem;
 
 Car::Car(std::string xmlFile, World *mWorld, const Vector2& pos, int chassisMat, int tireMat)
 {
@@ -15,12 +15,12 @@ Car::Car(std::string xmlFile, World *mWorld, const Vector2& pos, int chassisMat,
 	TransformStatus = Car::Normal;
 
 	//loac car file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(xmlFile);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(xmlFile);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	int dataSize = 0;
 	unsigned char* _buffer = file->GetData(dataSize);

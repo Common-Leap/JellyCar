@@ -45,10 +45,11 @@ TARGET		:=	JellyCar
 BUILD		:=	build
 SOURCES		:=	
 DATA		:=	data
+ASSETS_DIR	:=	../../Assets
 ANDROMEDA_LIB	?=	../../../Andromeda-Lib
 INCLUDES	:=	$(ANDROMEDA_LIB) $(ANDROMEDA_LIB)/Libs $(ANDROMEDA_LIB)/Libs/freetype_gl $(ANDROMEDA_LIB)/Libs/stb $(ANDROMEDA_LIB)/Libs/tinyxml $(ANDROMEDA_LIB)/Libs/tiny_obj_loader $(ANDROMEDA_LIB)/Libs/bullet/include/bullet \
 				../../../JellyCar ../../../JellyCar/Libs
-#ROMFS	:=	romfs
+ROMFS	:=	romfs
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -184,13 +185,18 @@ LIBDIRS	:= $(PORTLIBS) $(LIBNX)
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
+resolve_path = $(if $(filter /%,$(1)),$(1),$(CURDIR)/$(1))
+
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 export TOPDIR	:=	$(CURDIR)
+export ROMFS_SRC	:=	$(call resolve_path,$(ASSETS_DIR))
+export ROMFS_DST	:=	$(CURDIR)/$(ROMFS)/Assets
+export ROMFS_STAMP	:=	$(CURDIR)/$(ROMFS)/.assets-staged
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-					$(foreach sf,$(SOURCEFILES_CPP),$(CURDIR)/$(dir $(sf))) \
-					$(foreach sf,$(SOURCEFILES_C),$(CURDIR)/$(dir $(sf))) \
-					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export VPATH	:=	$(foreach dir,$(SOURCES),$(call resolve_path,$(dir))) \
+					$(foreach sf,$(SOURCEFILES_CPP),$(call resolve_path,$(dir $(sf)))) \
+					$(foreach sf,$(SOURCEFILES_C),$(call resolve_path,$(dir $(sf)))) \
+					$(foreach dir,$(DATA),$(call resolve_path,$(dir)))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
@@ -218,7 +224,7 @@ export OFILES_SRC	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 export OFILES 	:=	$(OFILES_BIN) $(OFILES_SRC)
 export HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
 
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(call resolve_path,$(dir))) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I$(CURDIR)/$(BUILD)
 
@@ -263,7 +269,7 @@ ifneq ($(APP_TITLEID),)
 endif
 
 ifneq ($(ROMFS),)
-	export NROFLAGS += --romfsdir=$(CURDIR)/$(ROMFS)
+	export NROFLAGS += --romfsdir=$(call resolve_path,$(ROMFS))
 endif
 
 .PHONY: $(BUILD) clean all
@@ -271,7 +277,24 @@ endif
 #---------------------------------------------------------------------------------
 all: $(BUILD)
 
-$(BUILD):
+$(ROMFS_STAMP):
+	@[ -d $(ROMFS_SRC) ] || (echo "Missing assets directory: $(ROMFS_SRC)" && false)
+	@[ -d $(CURDIR)/$(ROMFS) ] || mkdir -p $(CURDIR)/$(ROMFS)
+	@rm -rf $(ROMFS_DST)
+	@cp -a $(ROMFS_SRC) $(ROMFS_DST)
+	@if [ -d "$(ROMFS_DST)/Shaders/GL" ]; then \
+		for shader in "$(ROMFS_DST)"/Shaders/GL/*.vert "$(ROMFS_DST)"/Shaders/GL/*.frag; do \
+			[ -e "$$shader" ] || continue; \
+			cp -f "$$shader" "$(ROMFS_DST)/Shaders/$$(basename "$$shader")"; \
+		done; \
+	fi
+	@touch $(ROMFS_STAMP)
+
+$(BUILD): $(ROMFS_STAMP)
+	@grep -Fq "Switch cleanup: game manager done" $(call resolve_path,$(ANDROMEDA_LIB))/Andromeda/System/SWITCH/GameLoaderSwitch.cpp || (echo "Andromeda-Lib is missing Switch cleanup patch. Apply Build/Switch/andromeda-lib-libnx.patch."; false)
+	@grep -Fq "Switch return to libnx exit" $(call resolve_path,$(ANDROMEDA_LIB))/Andromeda/System/SWITCH/GameLoaderSwitch.cpp || (echo "Andromeda-Lib is missing Switch libnx-exit patch. Apply Build/Switch/andromeda-lib-libnx.patch."; false)
+	@grep -Fq "TexturedFont::LoadFromMemory: texture_font_new_from_memory failed" $(call resolve_path,$(ANDROMEDA_LIB))/Andromeda/Graphics/Text/TexturedFont.cpp || (echo "Andromeda-Lib is missing TexturedFont patch. Apply Build/Switch/andromeda-lib-libnx.patch."; false)
+	@grep -Fq "FT_Set_Pixel_Sizes(*face, 0, (FT_UInt)logical_size);" $(call resolve_path,$(ANDROMEDA_LIB))/Libs/freetype_gl/texture-font.c || (echo "Andromeda-Lib is missing freetype_gl font patch. Apply Build/Switch/andromeda-lib-libnx.patch."; false)
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
@@ -279,9 +302,9 @@ $(BUILD):
 clean:
 	@echo clean ...
 ifeq ($(strip $(APP_JSON)),)
-	@rm -fr $(BUILD) $(TARGET).nro $(TARGET).nacp $(TARGET).elf
+	@rm -fr $(BUILD) $(TARGET).nro $(TARGET).nacp $(TARGET).elf $(ROMFS)
 else
-	@rm -fr $(BUILD) $(TARGET).nsp $(TARGET).nso $(TARGET).npdm $(TARGET).elf
+	@rm -fr $(BUILD) $(TARGET).nsp $(TARGET).nso $(TARGET).npdm $(TARGET).elf $(ROMFS)
 endif
 
 

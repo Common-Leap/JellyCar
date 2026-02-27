@@ -12,10 +12,10 @@
 #include "tinyxml.h"
 
 #include <Andromeda/FileSystem/FileManager.h>
-using namespace Andromeda;
-
 #include <Andromeda/Graphics/TextureManager.h>
-using namespace Andromeda::Graphics;
+
+namespace AFS = Andromeda::FileSystem;
+namespace AGraphics = Andromeda::Graphics;
 
 std::string LevelManager::GetPathName(std::string& fileName)
 {
@@ -48,12 +48,12 @@ void LevelManager::LoadAllScenes(std::string fileName)
 	fileName = _assetLocation + fileName;
 
 	//loac main level file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(fileName);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(fileName);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	int dataSize = 0;
 	unsigned char* _buffer = file->GetData(dataSize);
@@ -92,12 +92,12 @@ void LevelManager::LoadCarSkins(std::string fileName)
 	fileName = _assetLocation + fileName;
 
 	//loac main level file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(fileName);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(fileName);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	int dataSize = 0;
 	unsigned char* _buffer = file->GetData(dataSize);
@@ -203,12 +203,12 @@ void LevelManager::LoadCarImage(std::string& imageName)
 	std::string imageLocation = _assetLocation + "Car_Skins/" + imageName;
 
 	//load
-	Texture* image = TextureManager::Instance()->LoadFromFile(imageLocation);
+	AGraphics::Texture* image = AGraphics::TextureManager::Instance()->LoadFromFile(imageLocation);
 
 	if (image != 0)
 	{
 		//add to collection
-		_images.insert(std::pair<std::string, Texture*>(imageName, image));
+		_images.insert(std::pair<std::string, AGraphics::Texture*>(imageName, image));
 	}
 }
 
@@ -217,16 +217,16 @@ void LevelManager::LoadLevelImage(std::string& imageName)
 	std::string imageLocation = _assetLocation + "Texture/" + imageName + ".png";
 
 	//load thumb
-	Texture* image = TextureManager::Instance()->LoadFromFile(imageLocation);
+	AGraphics::Texture* image = AGraphics::TextureManager::Instance()->LoadFromFile(imageLocation);
 
 	if (image != 0)
 	{
 		//add to collection
-		_images.insert(std::pair<std::string, Texture*>(imageName, image));
+		_images.insert(std::pair<std::string, AGraphics::Texture*>(imageName, image));
 	}
 }
 
-Texture* LevelManager::GetThumb(std::string levelName)
+AGraphics::Texture* LevelManager::GetThumb(std::string levelName)
 {
 	std::string thumb = "";
 
@@ -247,7 +247,7 @@ Texture* LevelManager::GetThumb(std::string levelName)
 	return _images[thumb];
 }
 
-Texture* LevelManager::GetCarImage(std::string carImage)
+AGraphics::Texture* LevelManager::GetCarImage(std::string carImage)
 {
 	if (_images.find(carImage) == _images.end())
 	{
@@ -297,12 +297,12 @@ bool LevelManager::LoadCompiledLevel(World *world, std::string levelName, std::s
 
 	levelFile = _assetLocation + "Scenes/" + levelFile + "c";
 
-	FileSystem::BaseFile* loadFile = FileSystem::FileManager::Instance()->GetFile(levelFile);
+	AFS::BaseFile* loadFile = AFS::FileManager::Instance()->GetFile(levelFile);
 
 	if (loadFile == 0)
 		return false;
 
-	loadFile->Open(FileSystem::Read, FileSystem::Binary);
+	loadFile->Open(AFS::Read, AFS::Binary);
 
 	//object container
 	std::vector<BodyObject> bodyObjects;
@@ -489,12 +489,12 @@ bool LevelManager::LoadLevel(World *world, std::string levelName, std::string ca
 	levelFile = _assetLocation +"Scenes/" + levelFile;
 
 	//loac main level file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(levelFile);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(levelFile);
 
 	if (file == 0)
 		return false;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	int dataSize = 0;
 	unsigned char* _buffer = file->GetData(dataSize);
@@ -720,12 +720,12 @@ std::string LevelManager::GetLevelFile(std::string levelName)
 void LevelManager::LoadScores(std::string fileName)
 {
 	//loac main level file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(fileName,true);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(fileName,true);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	if (!file->Exist())
 	{
@@ -771,7 +771,7 @@ void LevelManager::LoadScores(std::string fileName)
 
 void LevelManager::SaveScores(std::string fileName)
 {
-	std::string saveFile = FileSystem::FileManager::Instance()->GetSaveDirPath() + fileName;
+	std::string saveFile = AFS::FileManager::Instance()->GetSaveDirPath() + fileName;
 
 	TiXmlDocument doc;
 	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "", "");
@@ -899,12 +899,12 @@ void LevelManager::ReadLevelData(std::string levelName)
 	std::string levelFile = _assetLocation + "Scenes/" + levelName;
 
 	//loac main level file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(levelFile);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(levelFile);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	int dataSize = 0;
 	unsigned char* _buffer = file->GetData(dataSize);
@@ -1063,12 +1063,12 @@ void LevelManager::ReadLevelData(std::string levelName)
 	{
 		//loac main level file
 		levelFile = levelFile + "c";
-		FileSystem::BaseFile* saveFile = FileSystem::FileManager::Instance()->GetFile(levelFile);
+		AFS::BaseFile* saveFile = AFS::FileManager::Instance()->GetFile(levelFile);
 
 		if (saveFile == 0)
 			return;
 
-		saveFile->Open(FileSystem::Write, FileSystem::Binary);
+		saveFile->Open(AFS::Write, AFS::Binary);
 
 		//save body objects and info
 		int number = bodyObjects.size();
@@ -1131,12 +1131,12 @@ void LevelManager::ReadLevelData(std::string levelName)
 		bodyObjects.clear();
 		gameObjects.clear();
 
-		FileSystem::BaseFile* loadFile = FileSystem::FileManager::Instance()->GetFile(levelFile);
+		AFS::BaseFile* loadFile = AFS::FileManager::Instance()->GetFile(levelFile);
 
 		if (loadFile == 0)
 			return;
 
-		loadFile->Open(FileSystem::Read, FileSystem::Binary);
+		loadFile->Open(AFS::Read, AFS::Binary);
 
 		//load body objects and info
 		int number = 0;
@@ -1205,12 +1205,12 @@ void LevelManager::ReadLevelData(std::string levelName)
 BodyObject LevelManager::ReadBodyData(std::string bodyName)
 {
 	//loac main level file
-	FileSystem::BaseFile* file = FileSystem::FileManager::Instance()->GetFile(bodyName);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(bodyName);
 
 	if (file == 0)
 		return BodyObject();
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	int dataSize = 0;
 	unsigned char* _buffer = file->GetData(dataSize);

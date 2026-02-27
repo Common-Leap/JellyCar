@@ -99,10 +99,10 @@ void JellyIntro::CleanUp()
 	_gameBodies.clear();
 
 	delete _backSprite;
-	delete _inputHelper;
+	_inputHelper = 0;
 	delete _core;
 	delete _logoSprite;
-	delete _audioHelper;
+	_audioHelper = 0;
 
 	_shaderManager->RemoveAll();
 	_textureManager->RemoveAll();

@@ -3,7 +3,7 @@
 #include <Andromeda/FileSystem/FileManager.h>
 #include "tinyxml.h"
 
-using namespace Andromeda;
+namespace AFS = Andromeda::FileSystem;
 
 InputHelper* InputHelper::_inputHelper = 0;
 
@@ -711,12 +711,12 @@ void InputHelper::LoadSettings()
 	std::string fileName = "JellyKeySettings.xml";
 
 	//loac main level file
-	Andromeda::FileSystem::BaseFile* file = Andromeda::FileSystem::FileManager::Instance()->GetFile(fileName, true);
+	AFS::BaseFile* file = AFS::FileManager::Instance()->GetFile(fileName, true);
 
 	if (file == 0)
 		return;
 
-	file->Open(FileSystem::Read, FileSystem::Binary);
+	file->Open(AFS::Read, AFS::Binary);
 
 	if (!file->Exist())
 	{
@@ -765,7 +765,7 @@ void InputHelper::SaveSettings()
 {
 	std::string fileName = "JellyKeySettings.xml";
 
-	std::string saveFile = Andromeda::FileSystem::FileManager::Instance()->GetSaveDirPath() + fileName;
+	std::string saveFile = AFS::FileManager::Instance()->GetSaveDirPath() + fileName;
 
 	TiXmlDocument doc;
 	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "", "");
@@ -789,4 +789,3 @@ void InputHelper::SaveSettings()
 
 	doc.SaveFile(saveFile.c_str());
 }
-

@@ -3,6 +3,7 @@
 #include <Andromeda/Graphics/RenderManager.h>
 #include <Andromeda/Graphics/ShaderManager.h>
 #include <Andromeda/Graphics/Sprite.h>
+#include <Andromeda/Utils/Logger.h>
 
 JellyCore::JellyCore()
 {
@@ -24,26 +25,48 @@ JellyCore::~JellyCore()
 
 void JellyCore::Init()
 {
+	Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: begin\n");
+
 	//load basic shader
 	_spriteShader = ShaderManager::Instance()->LoadFromFile("font", "Assets/Shaders/font", "Assets/Shaders/font", TextureColor);
+	if (_spriteShader == 0)
+	{
+		Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: font shader load failed\n");
+		return;
+	}
 
-	//create atlas
-	_menuAtlas = new TextureAtlas(512, 512);
+	//create atlas (1024 avoids glyph packing failures on some runtime combos)
+	_menuAtlas = new TextureAtlas(1024, 1024);
+	Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: atlas created\n");
 
-	//load fonts
+	//load fonts (fallback to Vera when JellyFont fails to initialize on some builds)
+	auto buildFont = [this](float size, const char* label) -> TexturedFont*
+	{
+		TexturedFont* font = new TexturedFont(_menuAtlas, size, "Assets/Fonts/JellyFont.ttf");
+		font->SetShader(_spriteShader);
+		Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: cache %s font\n", label);
+		int result = font->CacheGlyphs(_cache);
+		Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: cache %s font result=%d\n", label, result);
 
-	_smallFont = new TexturedFont(_menuAtlas, 16, "Assets/Fonts/JellyFont.ttf");
-	_smallFont->SetShader(_spriteShader);
-	_smallFont->CacheGlyphs(_cache);
+		if (result < 0)
+		{
+			Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: fallback %s font -> Assets/Fonts/Vera.ttf\n", label);
+			delete font;
+			font = new TexturedFont(_menuAtlas, size, "Assets/Fonts/Vera.ttf");
+			font->SetShader(_spriteShader);
+			result = font->CacheGlyphs(_cache);
+			Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: fallback cache %s font result=%d\n", label, result);
+		}
 
-	_menuFont = new TexturedFont(_menuAtlas, 32, "Assets/Fonts/JellyFont.ttf");
-	_menuFont->SetShader(_spriteShader);
-	_menuFont->CacheGlyphs(_cache);
+		return font;
+	};
 
-	_titleFont = new TexturedFont(_menuAtlas, 64, "Assets/Fonts/JellyFont.ttf");
-	_titleFont->SetShader(_spriteShader);
-	_titleFont->CacheGlyphs(_cache);
+	_smallFont = buildFont(16, "small");
+	_menuFont = buildFont(32, "menu");
+	_titleFont = buildFont(64, "title");
 
 	//upload texture
+	Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: create atlas texture\n");
 	_menuAtlas->CreateTexture();
+	Andromeda::Utils::Logger::Instance()->Log("JellyCore::Init: done\n");
 }
