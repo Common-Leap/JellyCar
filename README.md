@@ -9,6 +9,8 @@ Current implementation uses [Andromeda-Lib](https://github.com/DrakonPL/Andromed
 
 ## Build instructions
 
+-Note: all the other platform builds from this fork are unsupported and are there because I'm too lazy to remove them. If you want the Vita or Windows builds, check the original project
+
 ### Nintendo Switch
 
 1. Clone both repositories as siblings:
